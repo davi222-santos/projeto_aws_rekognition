@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>AWS Rekognition</title>
+</head>
+<body>
+    <h1>AWS Rekognition / Avaliação Grupo-3</h1>
+    <form id="form">
+        <label for="bucketName">Nome do bucket:</label>
+        <input type="text" id="bucketName" name="bucketName"><br><br>
+        <label for="imageName">Nome da imagem:</label>
+        <input type="text" id="imageName" name="imageName"><br><br>
+        <label for="route">Rota:</label>
+        <select id="route" name="route">
+            <option value="v1">v1</option>
+            <option value="v2">v2</option>
+            <option value="v3">v3</option>
+        </select><br><br>
+        <button type="submit">Enviar</button>
+    </form>
+
+    <div id="response"></div>
+
+    <script>
+        const form = document.getElementById("form");
+        const responseDiv = document.getElementById("response");
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+            const route = formData.get("route");
+
+            let url;
+            if (route === "v1") {
+                url = "https://n3bay1s6wi.execute-api.us-east-1.amazonaws.com/v1/vision";
+            } else if (route === "v2") {
+                url = "https://n3bay1s6wi.execute-api.us-east-1.amazonaws.com/v2/vision";
+            } else if (route === "v3") {
+                url = "https://n3bay1s6wi.execute-api.us-east-1.amazonaws.com/v3/vision";
+            }
+
+            const response = await fetch(url, {
+                method: "POST",
+                body: JSON.stringify({
+                    bucket: formData.get("bucketName"),
+                    imageName: formData.get("imageName"),
+                }),
+                headers: {
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const data = await response.json();
+
+            responseDiv.innerHTML = `
+                <pre>${JSON.stringify(data, null, 2)}</pre>
+            `;
+        });
+    </script>
+</body>
+</html>

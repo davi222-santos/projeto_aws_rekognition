@@ -1,0 +1,94 @@
+service: vision
+frameworkVersion: '3'
+
+resources:
+  Resources:
+    MyS3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        AccessControl: PublicRead
+        BucketName: photos-sprint8-davi
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
+    MyBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref MyS3Bucket
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Sid: PublicReadGetObject
+              Effect: Allow
+              Principal: '*'
+              Action:
+                - s3:GetObject
+              Resource: arn:aws:s3:::photos-sprint8-davi/*
+
+provider:
+  name: aws
+  runtime: python3.9
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - "rekognition:DetectLabels"
+            - "rekognition:DetectFaces"
+          Resource: "*"
+
+functions:
+  health:
+    handler: handler.health
+    events:
+      - httpApi:
+          path: /
+          method: get
+  v1Description:
+    handler: handler.v1_description
+    events:
+      - httpApi:
+          path: /v1
+          method: get
+  v2Description:
+    handler: handler.v2_description
+    events:
+      - httpApi:
+          path: /v2
+          method: get
+  v3Description:
+    handler: handler.v3_description
+    events:
+      - httpApi:
+          path: /v3
+          method: get
+  v1Vision:
+    handler: routes/v1.v1Vision
+    name: v1Vision
+    events:
+      - httpApi:
+          path: /v1/vision
+          method: post
+  v2Vision:
+    handler: routes/v2.v2Vision
+    name: v2Vision
+    events:
+      - httpApi:
+          path: /v2/vision
+          method: post
+  v3Vision:
+    handler: routes/v3.v3Vision
+    name: v3Vision
+    events:
+      - httpApi:
+          path: /v3/vision
+          method: post
+  homepage:
+    handler: routes/homepage.home_vision
+    name: homepage
+    events:
+      - httpApi:
+          path: /home
+          method: get
